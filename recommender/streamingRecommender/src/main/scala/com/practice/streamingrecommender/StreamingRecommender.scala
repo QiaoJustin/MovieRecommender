@@ -67,8 +67,10 @@ object StreamingRecommender {
               (recs.mid, recs.recs.map(x => (x.rid, x.r)).toMap)
           }.collectAsMap()
 
-        val simMoviesMatrixBroadCase = sc.broadcast(simMoviesMatrix)
+        val simMoviesMatrixBroadCast = sc.broadcast(simMoviesMatrix)
 
+        val abc =sc.makeRDD(1 to 2)
+        abc.map(x => simMoviesMatrixBroadCast.value.get(1)).count()
 
         //========================
 
@@ -105,15 +107,16 @@ object StreamingRecommender {
                         println(">>>>>>>>>>>>>>")
 
                         // 获取当前最近的 M 次电影评分
-                        getUserRecentlyRating(MAX_USER_RATINGS_NUM, uid, ConnHelper.jedis)
+                        val userRecentlyRatings = getUserRecentlyRating(MAX_USER_RATINGS_NUM, uid, ConnHelper.jedis)
 
                         // 获取电影 P 最相似的 K 个电影
-                        getTopSimMovies(MAX_SIM_MOVIES_NUM, mid, uid, simMoviesMatrixBroadCase.value)
+                        val simMovies = getTopSimMovies(MAX_SIM_MOVIES_NUM, mid, uid, simMoviesMatrixBroadCast.value)
 
                         // 计算待选电影的推荐优先级
+                        val stramRecs = computeMovieScores(simMoviesMatrixBroadCast.value, userRecentlyRatings, simMovies)
 
                         // 将数据保存到 MongoDB
-
+                        saveRecsToMongoDB(uid, stramRecs)
 
                 }.count()
         }
@@ -121,6 +124,74 @@ object StreamingRecommender {
         // 启动 Streaming 程序
         ssc.start()
         ssc.awaitTermination()
+    }
+
+    /**
+      * 将数据保存到 MongoDB      uid -> 1,   recs -> 22:4.5 | 45:3.8
+      * @param streamRecs       流式的推荐结果
+      * @param mongoConfig      MongoDB 的配置
+      */
+    def saveRecsToMongoDB(uid:Int, streamRecs:Array[(Int, Double)])(implicit mongoConfig: MongoConfig): Unit = {
+        // 到 StreamRecs 的连接
+        val streaRecsCollection = ConnHelper.mongoClient(mongoConfig.db)(MONGODB_STREAM_RECS_COLLECTION)
+
+        streaRecsCollection.findAndRemove(MongoDBObject("uid" -> uid))
+        streaRecsCollection.insert(MongoDBObject("uid" -> uid, "recs" -> streamRecs.map(x => x._1 + ":" + x._2).mkString("|")))
+    }
+
+    /**
+      * 计算待选电影的推荐分数
+      * @param simMovies                电影相似度矩阵
+      * @param userRecentlyRatings      用户最近的 K 次评分
+      * @param topSimMovies             当前电影最相似的 K 部电影
+      */
+    def computeMovieScores(simMovies: scala.collection.Map[Int, scala.collection.immutable.Map[Int, Double]],
+                           userRecentlyRatings: Array[(Int, Double)],
+                           topSimMovies: Array[Int]): Array[(Int, Double)] = {
+        // 用于保存每一部待选电影和最近评分的每一部电影的权重得分
+        val score = scala.collection.mutable.ArrayBuffer[(Int, Double)]()
+        // 用于保存每一部电影的增强因子数
+        val increMap = scala.collection.mutable.HashMap[Int, Int]()
+        // 用于保存每一部电影的减弱因子数
+        val decreMap = scala.collection.mutable.HashMap[Int, Int]()
+
+        for (topSimMovie <- topSimMovies; userRecentlyRating <- userRecentlyRatings){
+            val simScore = getMovieSimScore(simMovies, userRecentlyRating._1, topSimMovie)
+            if (simScore > 0.6) {
+                score += ((topSimMovie, simScore * userRecentlyRating._2 ))
+                if (userRecentlyRating._2 > 3) {
+                    increMap(topSimMovie) = increMap.getOrDefault(topSimMovie, 0) + 1
+                } else {
+                    decreMap(topSimMovie) = decreMap.getOrDefault(topSimMovie, 0) + 1
+                }
+            }
+        }
+        score.groupBy(_._1).map{case (mid, sims) =>
+            (mid,sims.map(_._2).sum / sims.length + log(increMap(mid)) - log(decreMap(mid)))
+        }.toArray
+    }
+
+    // 取 2 的对数
+    def log(m:Int):Double = {
+        math.log(m) / math.log(2)
+    }
+
+    /**
+      * 获取单部电影之间的相似度
+      * @param simMovies            电影相似度矩阵
+      * @param userRatingMovie      用户已经评分的电影
+      * @param topSimMoive          候选电影
+      */
+    def getMovieSimScore(simMovies: scala.collection.Map[Int, scala.collection.immutable.Map[Int, Double]],
+                         userRatingMovie:Int,
+                         topSimMoive:Int):Double = {
+        simMovies.get(topSimMoive) match {
+            case Some(sim) => sim.get(userRatingMovie) match {
+                case Some(score) => score
+                case None => 0.0
+            }
+            case None => 0.0
+        }
     }
 
     /**
@@ -156,7 +227,7 @@ object StreamingRecommender {
     def getUserRecentlyRating(num: Int, uid: Int, jedis: Jedis): Array[(Int, Double)] = {
         // 从用户的队列中取出 num 个评论
         jedis.lrange("uid" + uid.toString, 0, num).map { item =>
-            val attr = item.split(":")
+            val attr = item.split("\\:")
             (attr(0).trim.toInt, attr(1).trim.toDouble)
         }.toArray
     }
