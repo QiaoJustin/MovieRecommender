@@ -18,6 +18,7 @@
         <module>offlineRecommender</module>
         <module>StreamingRecommender</module>
         <module>website</module>
+        <module>kafkaStream</module>
     </modules>
 
     <dependencyManagement>
