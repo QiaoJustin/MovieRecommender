@@ -42,6 +42,11 @@
         <!-- 加入 MongoDB 的驱动 -->
         <!-- 用于代码方式连接 MongoDB -->
         <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>casbah-core_2.11</artifactId>
+            <version>${casbah.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.mongodb.spark</groupId>
             <artifactId>mongo-spark-connector_2.11</artifactId>
             <version>${mongodb-spark.version}</version>

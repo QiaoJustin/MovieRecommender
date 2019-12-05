@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ScalaCompilerConfiguration">
-    <profile name="Maven 1" modules="staticticsRecommeder,offlineRecommender,dataloader,streamingRecommender" />
+    <profile name="Maven 1" modules="dataloader,staticticsRecommeder,offlineRecommender,streamingRecommender" />
   </component>
 </project>
