@@ -17,6 +17,7 @@
         <module>staticticsRecommeder</module>
         <module>offlineRecommender</module>
         <module>StreamingRecommender</module>
+        <module>website</module>
     </modules>
 
     <dependencyManagement>

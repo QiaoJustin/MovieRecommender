@@ -105,7 +105,6 @@ object StreamingRecommender {
                 rdd.map {
                     case (uid, mid, score, timestamp) =>
                         println(">>>>>>>>>>>>>>")
-
                         // 获取当前最近的 M 次电影评分
                         val userRecentlyRatings = getUserRecentlyRating(MAX_USER_RATINGS_NUM, uid, ConnHelper.jedis)
 
@@ -120,7 +119,6 @@ object StreamingRecommender {
 
                 }.count()
         }
-
         // 启动 Streaming 程序
         ssc.start()
         ssc.awaitTermination()
@@ -134,7 +132,6 @@ object StreamingRecommender {
     def saveRecsToMongoDB(uid:Int, streamRecs:Array[(Int, Double)])(implicit mongoConfig: MongoConfig): Unit = {
         // 到 StreamRecs 的连接
         val streaRecsCollection = ConnHelper.mongoClient(mongoConfig.db)(MONGODB_STREAM_RECS_COLLECTION)
-
         streaRecsCollection.findAndRemove(MongoDBObject("uid" -> uid))
         streaRecsCollection.insert(MongoDBObject("uid" -> uid, "recs" -> streamRecs.map(x => x._1 + ":" + x._2).mkString("|")))
     }

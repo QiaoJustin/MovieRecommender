@@ -3,6 +3,7 @@ package com.practice.offlineRecommender
 import org.apache.spark.SparkConf
 import org.apache.spark.mllib.recommendation.{ALS, Rating}
 import org.apache.spark.sql.SparkSession
+import org.jblas.DoubleMatrix
 
 /**
   * 1、Movies 数据集：通过,分割
@@ -48,7 +49,7 @@ case class UserRecs(uid:Int,recs:Seq[Recommendation])
   * @param uid
   * @param recs
   */
-case class MovieRecs(uid:Int, recs:Seq[Recommendation])
+case class MovieRecs(mid:Int, recs:Seq[Recommendation])
 
 object OfflineRecommender {
 
@@ -56,6 +57,7 @@ object OfflineRecommender {
     val MONGODB_RATING_COLLECTION = "Rating"
     val USER_MAX_RECOMMENDATION = 20
     val USER_RECS = "UserRecs"
+    val MOVIE_RECS = "MovieRecs"
 
     def main(args: Array[String]): Unit = {
         val config = Map(
@@ -72,11 +74,10 @@ object OfflineRecommender {
 
         // 基于 SparkSession 创建一个 Sparksession
         val spark = SparkSession.builder().config(sparkConf).getOrCreate()
-
         // 创建一个 MongoDBConfig
         val mongoConfig = MongoConfig(config("mongo.uri"), config("mongo.uri"))
-
         import spark.implicits._
+
         // 读取 MongoDB 的业务数据
         val ratingRDD = spark
           .read
@@ -104,7 +105,6 @@ object OfflineRecommender {
 
         // 创建训练数据集
         val trainData = ratingRDD.map(x => Rating(x._1,x._2,x._3))
-
         val (rank, iterations,lambda) = (50, 10, 0.01)
 
         // 训练 ALS 模型
@@ -112,8 +112,7 @@ object OfflineRecommender {
 
         // 计算用户推荐矩阵
         // 需要构造 usersproducts RDD[Int,Int]
-        val userMovies = userRDD.cartesian(movieRDD)
-
+        /*val userMovies = userRDD.cartesian(movieRDD)
         val preRatings = model.predict(userMovies)
 
         val userRecs = preRatings.map(rating => (rating.user, (rating.product, rating.rating))).groupByKey().map {
@@ -130,12 +129,40 @@ object OfflineRecommender {
           .option("collection", USER_RECS)
           .mode("overwrite")
           .format("com.mongodb.spark.sql")
-          .save()
+          .save()*/
 
         // 计算电影相似度矩阵
+        // 获取电影的特征矩阵
+        val movieFeatures = model.productFeatures.map{case (mid, freatures) =>
+            (mid, new DoubleMatrix(freatures))
+        }
+
+        val movieRecs = movieFeatures.cartesian(movieFeatures).filter {
+            case (a, b) =>
+                a._1 != b._1
+        }.map {
+            case (a, b) =>
+                val simScore = this.consinSim(a._2, b._2)
+                (a._1, (b._1, simScore))
+        }.filter(_._2._2 > 0.6).groupByKey().map { case (mid, items) =>
+            MovieRecs(mid, items.toList.map(x => Recommendation(x._1, x._2)))
+        }.toDF()
+
+        movieRecs
+          .write
+          .option("uri", mongoConfig.uri)
+          .option("collection", MOVIE_RECS)
+          .mode("overwrite")
+          .format("com.mongodb.spark.sql")
+          .save()
 
         // 关闭 spark
         spark.close()
+    }
+
+    // 计算两部电影之间的余弦相似度
+    def consinSim(movie1:DoubleMatrix, movie2:DoubleMatrix) : Double = {
+        movie1.dot(movie2) / (movie1.norm2() * movie2.norm2())
     }
 
 }
