@@ -1,4 +1,4 @@
-package com.practice.server.rest;
+package com.practice.business.rest;
 
 /**
  * @Description 用于处理电影相关的功能

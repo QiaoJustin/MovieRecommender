@@ -6,7 +6,9 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="businessServer" />
         <module name="dataloader" />
+        <module name="kafkaStream" />
         <module name="offlineRecommender" />
         <module name="staticticsRecommeder" />
         <module name="streamingRecommender" />

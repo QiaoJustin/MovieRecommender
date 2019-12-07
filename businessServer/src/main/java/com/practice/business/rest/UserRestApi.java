@@ -1,4 +1,7 @@
-package com.practice.server.rest;
+package com.practice.business.rest;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * @Description 用于处理 User 相关的动作
@@ -6,6 +9,8 @@ package com.practice.server.rest;
  * @Date 2019/12/6 13:32
  * Version 1.0
  */
+@Controller
+@RequestMapping("/rest/users")
 public class UserRestApi {
 
     /**
