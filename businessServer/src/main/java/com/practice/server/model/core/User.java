@@ -1,4 +1,4 @@
-package com.practice.business.model.core;
+package com.practice.server.model.core;
 
 import java.util.ArrayList;
 import java.util.List;

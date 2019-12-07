@@ -1,4 +1,4 @@
-package com.practice.business.rest;
+package com.practice.server.rest;
 
 import org.springframework.ui.Model;
 

@@ -1,6 +1,6 @@
-package com.practice.business.rest;
+package com.practice.server.rest;
 
-import com.practice.business.model.core.User;
+import com.practice.server.model.core.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
