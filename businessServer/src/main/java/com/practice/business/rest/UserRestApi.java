@@ -1,7 +1,11 @@
 package com.practice.business.rest;
 
+import com.practice.business.model.core.User;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * @Description 用于处理 User 相关的动作
@@ -20,9 +24,12 @@ public class UserRestApi {
      * @param model
      * @return Model
      */
-    /*public Model registerUser(String username, String password, Model model){
+    @RequestMapping(path = "/register", produces = "application/json", method = RequestMethod.POST)
+    @ResponseBody
+    public Model registerUser(String username, String password, Model model){
+
         return null;
-    }*/
+    }
 
     /**
      * 需要提供用户登录功能
@@ -30,9 +37,11 @@ public class UserRestApi {
      * @param password      密码
      * @param model
      */
-    /*public Model loginUser(String username, String password, Model model) {
+    @RequestMapping(path = "/login", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
+    public User loginUser(String username, String password, Model model) {
         return null;
-    }*/
+    }
 
     /**
      * 需要能够添加用户偏爱的影片类别
@@ -40,8 +49,8 @@ public class UserRestApi {
      * @param genres
      * @param model
      */
-    /*public Model addGenres(String username, String genres, Model model) {
+    public Model addGenres(String username, String genres, Model model) {
         return null;
-    }*/
+    }
 
 }
