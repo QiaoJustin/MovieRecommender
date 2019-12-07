@@ -8,5 +8,35 @@ package com.practice.server.rest;
  */
 public class UserRestApi {
 
+    /**
+     *  需要提供用户注册功能
+     * @param username      用户名
+     * @param password      密码
+     * @param model
+     * @return Model
+     */
+    /*public Model registerUser(String username, String password, Model model){
+        return null;
+    }*/
+
+    /**
+     * 需要提供用户登录功能
+     * @param username      用户名
+     * @param password      密码
+     * @param model
+     */
+    /*public Model loginUser(String username, String password, Model model) {
+        return null;
+    }*/
+
+    /**
+     * 需要能够添加用户偏爱的影片类别
+     * @param username
+     * @param genres
+     * @param model
+     */
+    /*public Model addGenres(String username, String genres, Model model) {
+        return null;
+    }*/
 
 }
