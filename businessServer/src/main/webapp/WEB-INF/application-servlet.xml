@@ -28,12 +28,14 @@
                     <bean class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean">
                         <property name="featuresToEnable">
                             <array>
-                                <util:constant static-field="com.fasterxml.jackson.databind.SerializationFeature.CLOSE_CLOSEABLE"/>
+                                <util:constant
+                                        static-field="com.fasterxml.jackson.databind.SerializationFeature.CLOSE_CLOSEABLE"/>
                             </array>
                         </property>
                         <property name="featuresToDisable">
                             <array>
-                                <util:constant static-field="com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS"/>
+                                <util:constant
+                                        static-field="com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS"/>
                             </array>
                         </property>
                     </bean>
@@ -41,6 +43,7 @@
             </bean>
         </mvc:message-converters>
     </mvc:annotation-driven>
+    <!-- 内容解析器 -->
     <bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
         <property name="contentNegotiationManager" ref="contentNegotiationManager"/>
         <property name="viewResolvers">
@@ -58,8 +61,9 @@
         </property>
         <property name="useNotAcceptableStatusCode" value="true"/>
     </bean>
-    <bean id="contentNegotiationManager"
-          class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+
+    <!-- 内容解析器管理器 -->
+    <bean id="contentNegotiationManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
         <property name="defaultContentType" value="application/json"/>
         <property name="mediaTypes">
             <value>
@@ -69,9 +73,10 @@
             </value>
         </property>
     </bean>
+    <!-- 用于处理静态文件用的 -->
     <mvc:default-servlet-handler/>
+    <!-- 用于跨域访问用的 -->
     <mvc:cors>
-        <mvc:mapping path="/**" allowed-origins="*" allow-credentials="true" max-age="1800"
-                     allowed-methods="GET,POST,OPTIONS"/>
+        <mvc:mapping path="/**" allowed-origins="*" allow-credentials="true" max-age="1800" allowed-methods="GET,POST,OPTIONS"/>
     </mvc:cors>
 </beans>

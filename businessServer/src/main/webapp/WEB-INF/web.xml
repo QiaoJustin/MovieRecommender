@@ -4,13 +4,16 @@
         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
     <display-name>recommender</display-name>
+    <!-- 用于指定 Spring Application Context 的配置文件路径 -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>classpath:application.xml</param-value>
     </context-param>
     <listener>
+        <!-- 用于监听整个 Servlet 容器的启动，进而启动 Spring Application Context -->
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
+
     <filter>
         <filter-name>CharacterEncodingFilter</filter-name>
         <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
@@ -23,16 +26,20 @@
             <param-value>true</param-value>
         </init-param>
     </filter>
+
     <filter-mapping>
         <filter-name>CharacterEncodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- 配置你的 servlet -->
     <servlet>
         <servlet-name>recommend</servlet-name>
+        <!-- Spring 提供的 Servlet 的实现 -->
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <init-param>
             <param-name>contextConfigLocation</param-name>
+            <!-- 指定了 web application context 的配置文件 -->
             <param-value>/WEB-INF/application-servlet.xml</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
@@ -40,9 +47,11 @@
 
     <servlet-mapping>
         <servlet-name>recommend</servlet-name>
+        <!-- 要让 recommend 这个 servlet 处理所有的 URL -->
         <url-pattern>/</url-pattern>
     </servlet-mapping>
 
+    <!-- 定义欢迎页面 -->
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
