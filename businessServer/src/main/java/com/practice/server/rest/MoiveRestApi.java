@@ -1,6 +1,11 @@
 package com.practice.server.rest;
 
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * @Description 用于处理电影相关的功能
@@ -8,12 +13,22 @@ import org.springframework.ui.Model;
  * @Date 2019/12/7 17:13
  * Version 1.0
  */
+@Controller
+@RequestMapping("/rest/movies")
 public class MoiveRestApi {
 
     // ************ 首页功能 ***************
 
-    // 提供获取实时推荐信息的接口
-    public Model getRealRecommendations(String username, Model model) {
+    /** 提供获取实时推荐信息的接口 【混合推荐】
+     *  访问 url：/rest/movies/stream?username=abn&num=100
+     *  返回：{success: true, movies:[]}
+     * @param username
+     * @param num
+     * @param model
+     */
+    @RequestMapping(path = "/stream", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
+    public Model getRealRecommendations(@RequestParam("username") String username, @RequestParam("num") int num, Model model) {
         return null;
     }
 
