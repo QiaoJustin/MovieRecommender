@@ -10,6 +10,7 @@
     <modules>
         <module>recommender</module>
         <module>businessServer</module>
+        <module>websites</module>
     </modules>
     <packaging>pom</packaging>
 

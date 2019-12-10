@@ -1,5 +1,7 @@
 package com.practice.server.model.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +12,11 @@ import java.util.List;
  * Version 1.0
  */
 public class User {
+
+    @JsonIgnore
+    private int _id;
+
+    private int uid;
 
     private String username;
 
@@ -22,6 +29,7 @@ public class User {
     }
 
     public void setUsername(String username) {
+        this.uid = username.hashCode();
         this.username = username;
     }
 
@@ -39,5 +47,9 @@ public class User {
 
     public void setGenres(List<String> genres) {
         this.genres = genres;
+    }
+
+    public int getUid() {
+        return uid;
     }
 }

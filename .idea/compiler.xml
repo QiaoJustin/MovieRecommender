@@ -13,6 +13,7 @@
         <module name="staticticsRecommeder" />
         <module name="streamingRecommender" />
         <module name="website" />
+        <module name="websites" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
