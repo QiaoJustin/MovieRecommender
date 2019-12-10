@@ -37,15 +37,17 @@ public class RecommenderService {
     private TransportClient esClient;
 
     /**
-     * 获取混合推荐结果
+     * 获取混合推荐结果【用在当前电影的相似中】
+     * @param request
+     * @return
      */
     public List<Recommendation> getHybridRecommendations(GetHybridRecommendationRequest request) {
 
         // 获得实时推荐结果
-        List<Recommendation> streamRecs = getStreamRecsMovies(new GetStreamRecsRequest(request.getUid(), request.getNum()));
+        // List<Recommendation> streamRecs = getStreamRecsMovies(new GetStreamRecsRequest(request.getUid(), request.getNum()));
 
         // 获得 ALS 离线推荐结果
-        List<Recommendation> userRecs = getUserCFMovies(new GetUserCFRequest(request.getUid(), request.getNum()));
+        // List<Recommendation> userRecs = getUserCFMovies(new GetUserCFRequest(request.getUid(), request.getNum()));
 
         // 获得基于内容推荐结果
 

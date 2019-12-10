@@ -70,6 +70,7 @@ public class UserService {
 
     /**
      * 用于提供注册用户的服务
+     * @param request
      */
     public boolean registerUser(RegisterUserRequest request) {
         // 判断是否有相同的用户名已经注册
@@ -90,6 +91,7 @@ public class UserService {
 
     /**
      * 用于提供用户登录的服务
+     * @param request
      */
     public boolean loginUser(LoginUserRequest request) {
         // 需要找到这个用户
@@ -105,10 +107,22 @@ public class UserService {
 
     /**
      * 用于更新用户第一次登录选择的电影类别
+     * @param request
      */
     public void updateUserGenres(UpdateUserGenresRequest request) {
         getUserCollection().updateOne(new Document("username", request.getUsername()), new Document().append("$set", new Document("$genres", request.getGenres())));
         getUserCollection().updateOne(new Document("username", request.getUsername()), new Document().append("$set", new Document("$first", false)));
+    }
+
+    /**
+     * 根据用户名查找 user
+     * @param username
+     */
+    public User findUserByUsername(String username) {
+        Document document = getUserCollection().find(new Document("username", username)).first();
+        if (null == document || document.isEmpty())
+            return null;
+        return documentToUser(document);
     }
 
 }

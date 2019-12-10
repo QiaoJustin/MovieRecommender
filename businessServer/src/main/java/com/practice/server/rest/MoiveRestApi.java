@@ -1,11 +1,22 @@
 package com.practice.server.rest;
 
+import com.practice.server.model.core.Movie;
+import com.practice.server.model.core.User;
+import com.practice.server.model.recom.Recommendation;
+import com.practice.server.model.request.GetStreamRecsRequest;
+import com.practice.server.service.MovieService;
+import com.practice.server.service.RecommenderService;
+import com.practice.server.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Description 用于处理电影相关的功能
@@ -16,6 +27,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @RequestMapping("/rest/movies")
 public class MoiveRestApi {
+
+    @Autowired
+    private RecommenderService recommenderService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private MovieService movieService;
 
     // ************ 首页功能 ***************
 
@@ -29,10 +49,25 @@ public class MoiveRestApi {
     @RequestMapping(path = "/stream", produces = "application/json", method = RequestMethod.GET)
     @ResponseBody
     public Model getRealRecommendations(@RequestParam("username") String username, @RequestParam("num") int num, Model model) {
-        return null;
+        User user = userService.findUserByUsername(username);
+        List<Recommendation> recommendations = recommenderService.getStreamRecsMovies(new GetStreamRecsRequest(user.getUid(), num));
+        List<Integer> ids = new ArrayList<>();
+        for (Recommendation recom : recommendations) {
+            ids.add(recom.getMid());
+        }
+        List<Movie> result = movieService.getMoviesByMids(ids);
+        model.addAttribute("success", true);
+        model.addAttribute("movies",result);
+        return model;
     }
 
-    // 提供获取离线推荐信息的接口
+    /**
+     * 提供获取离线推荐信息的接口
+     * @param username
+     * @param model
+     */
+    @RequestMapping(path = "/offline", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
     public Model getOfflineRecommendations(String username, Model model) {
         return null;
     }
