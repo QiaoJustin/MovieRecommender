@@ -1,6 +1,8 @@
 package com.practice.server.rest;
 
-import com.practice.server.model.core.User;
+import com.practice.server.model.request.RegisterUserRequest;
+import com.practice.server.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +20,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/rest/users")
 public class UserRestApi {
 
+    @Autowired
+    private UserService userService;
+
     /**
      * 需要提供用户注册功能
      * url: /rest/users/register
@@ -29,8 +34,8 @@ public class UserRestApi {
     @RequestMapping(path = "/register", produces = "application/json", method = RequestMethod.GET)
     @ResponseBody
     public Model registerUser(@RequestParam("username") String username, @RequestParam("password") String password, Model model) {
-
-        return null;
+        model.addAttribute("success", userService.registerUser(new RegisterUserRequest(username, password)));
+        return model;
     }
 
     /**
@@ -42,8 +47,10 @@ public class UserRestApi {
      */
     @RequestMapping(path = "/login", produces = "application/json", method = RequestMethod.GET)
     @ResponseBody
-    public User loginUser(String username, String password, Model model) {
-        return null;
+    public Model loginUser(String username, String password, Model model) {
+
+
+        return model;
     }
 
     /**

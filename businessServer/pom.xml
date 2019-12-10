@@ -93,7 +93,7 @@
                 <version>2.2</version>
                 <configuration>
                     <!-- 指定运行后可以访问的端口 -->
-                    <port>8088</port>
+                    <port>8888</port>
                     <!-- 指定了运行时的根目录 -->
                     <path>/</path>
                     <!-- 当你更改了代码后，tomcat 自动重新加载 -->
