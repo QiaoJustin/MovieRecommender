@@ -22,6 +22,10 @@ public class User {
 
     private String password;
 
+    /** 用户记录用户是第一次登录 */
+    private boolean first;
+
+    /** 用于保存电影的的类别 */
     private List<String> genres = new ArrayList<>();
 
     public String getUsername() {
@@ -51,5 +55,21 @@ public class User {
 
     public int getUid() {
         return uid;
+    }
+
+    public int get_id() {
+        return _id;
+    }
+
+    public void set_id(int _id) {
+        this._id = _id;
+    }
+
+    public boolean isFirst() {
+        return first;
+    }
+
+    public void setFirst(boolean first) {
+        this.first = first;
     }
 }
