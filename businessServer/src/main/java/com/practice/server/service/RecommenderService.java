@@ -220,4 +220,16 @@ public class RecommenderService {
                 .actionGet();
         return parseESResponse(searchResponse);
     }
+
+
+    public List<Recommendation> getGenresMovies(GetGenresMovieRequest request){
+        FuzzyQueryBuilder queryBuilder = QueryBuilders.fuzzyQuery("genres", request.getGenres());
+        SearchResponse searchResponse = esClient
+                .prepareSearch(Constant.ES_INDEX)
+                .setQuery(queryBuilder)
+                .setSize(request.getNum())
+                .execute()
+                .actionGet();
+        return parseESResponse(searchResponse);
+    }
 }

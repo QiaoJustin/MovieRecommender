@@ -1,14 +1,15 @@
 package com.practice.server.rest;
 
 import com.practice.server.model.core.Movie;
+import com.practice.server.model.core.Rating;
 import com.practice.server.model.core.Tag;
 import com.practice.server.model.core.User;
 import com.practice.server.model.recom.Recommendation;
 import com.practice.server.model.request.*;
-import com.practice.server.service.MovieService;
-import com.practice.server.service.RecommenderService;
-import com.practice.server.service.TagService;
-import com.practice.server.service.UserService;
+import com.practice.server.service.*;
+import com.practice.server.utils.Constant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,6 +40,12 @@ public class MoiveRestApi {
 
     @Autowired
     private TagService tagService;
+
+    @Autowired
+    private RatingService ratingService;
+
+    private Logger logger = LoggerFactory.getLogger(MoiveRestApi.class);
+
 
     // ************ 首页功能 ***************
 
@@ -221,15 +228,24 @@ public class MoiveRestApi {
      */
     @RequestMapping(path = "/rate/{mid}", produces = "application/json", method = RequestMethod.GET)
     @ResponseBody
-    public Model rateMovies(@RequestParam("username") String username, @PathVariable("mid") int mid, @RequestParam("score") Double score, Model model) {
-        return null;
+    public void rateMovie(@RequestParam("username") String username, @PathVariable("mid") int mid, @RequestParam("score") Double score, Model model) {
+        User user = userService.findUserByUsername(username);
+        Rating rating = new Rating(user.getUid(), mid, score, System.currentTimeMillis() / 1000);
+        ratingService.rateToMovie(rating);
+
+        // 输出埋点日志
+        logger.info(Constant.USER_RATING_LOG_PREFIX + rating.getUid() + "|" + rating.getMid() + "|" + rating.getScore() + "|" + rating.getTimestamp());
     }
 
     // ************ 电影的类别页面 ***************
 
     // 需要提供电影类别的查找
-    public Model getGenresMovies(String genres, Model model) {
-        return null;
+    @RequestMapping(path = "/genres", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
+    public Model getGenresMovies(@RequestParam("genres") String genres, @RequestParam("num") int num, Model model) {
+        model.addAttribute("success", true);
+        model.addAttribute("tag", recommenderService.getGenresMovies(new GetGenresMovieRequest(genres, num)));
+        return model;
     }
 
     // ************ 用户空间页面 ***************
