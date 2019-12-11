@@ -1,19 +1,18 @@
 package com.practice.server.rest;
 
 import com.practice.server.model.core.Movie;
+import com.practice.server.model.core.Tag;
 import com.practice.server.model.core.User;
 import com.practice.server.model.recom.Recommendation;
 import com.practice.server.model.request.*;
 import com.practice.server.service.MovieService;
 import com.practice.server.service.RecommenderService;
+import com.practice.server.service.TagService;
 import com.practice.server.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +36,9 @@ public class MoiveRestApi {
 
     @Autowired
     private MovieService movieService;
+
+    @Autowired
+    private TagService tagService;
 
     // ************ 首页功能 ***************
 
@@ -143,7 +145,7 @@ public class MoiveRestApi {
      * @param query
      * @param model
      */
-    @RequestMapping(path = "/fuzzy", produces = "application/json", method = RequestMethod.GET)
+    @RequestMapping(path = "/query", produces = "application/json", method = RequestMethod.GET)
     @ResponseBody
     public Model getFuzzySearchMovies(@RequestParam("query") String query, @RequestParam("num") int num, Model model) {
         model.addAttribute("success", true);
@@ -153,32 +155,73 @@ public class MoiveRestApi {
 
     // ************ 电影的详细页面 ***************
 
-    // 获取单部电影信息
-    @RequestMapping(path = "/info", produces = "application/json", method = RequestMethod.GET)
+    /**
+     * 获取单部电影信息
+     *
+     * @param mid
+     * @param model
+     */
+    @RequestMapping(path = "/info/{mid}", produces = "application/json", method = RequestMethod.GET)
     @ResponseBody
-    public Model getMovieInfo(@RequestParam("mid") int mid, Model model) {
-
-
-        return null;
+    public Model getMovieInfo(@PathVariable("mid") int mid, Model model) {
+        model.addAttribute("success", true);
+        model.addAttribute("movie", movieService.findMovieInfo(mid));
+        return model;
     }
 
-    // 需要提供给电影打标签的功能
-    public Model addTagToMovie(int mid, String tagName, Model model) {
-        return null;
+    /**
+     * 需要提供给电影打标签的功能
+     *
+     * @param mid
+     * @param tagname
+     * @param model
+     */
+    @RequestMapping(path = "/addtag/{mid}", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
+    public void addTagToMovie(@PathVariable("mid") int mid, @RequestParam("username") String username, @RequestParam("tagname") String tagname, Model model) {
+        User user = userService.findUserByUsername(username);
+        Tag tag = new Tag(user.getUid(), mid, Double.valueOf(tagname), System.currentTimeMillis() / 1000);
+        tagService.addTagToMovie(tag);
     }
 
-    // 获取单部电影的所有标签信息
-    public Model getMovieTags(int mid, Model model) {
-        return null;
+    /**
+     * 获取单部电影的所有标签信息
+     *
+     * @param mid
+     * @param model
+     */
+    @RequestMapping(path = "/tag/{mid}", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
+    public Model getMovieTags(@PathVariable("mid") int mid, Model model) {
+        model.addAttribute("success", true);
+        model.addAttribute("tag", tagService.getMovieTags(mid));
+        return model;
     }
 
-    // 需要能够获取电影相似的电影推荐
-    public Model getSimMoviesRecommendation(int mid, Model model) {
-        return null;
+    /**
+     * 需要能够获取电影相似的电影推荐
+     *
+     * @param mid
+     * @param model
+     */
+    @RequestMapping(path = "/same/{mid}", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
+    public Model getSimMoviesRecommendation(@PathVariable("mid") int mid, @RequestParam("num") int num, Model model) {
+        model.addAttribute("success", true);
+        model.addAttribute("movie", recommenderService.getHybridRecommendations(new GetHybridRecommendationRequest(0.5, mid, num)));
+        return model;
     }
 
-    // 需要提供给电影打分的功能
-    public Model rateMovies(int mid, Double score, Model model) {
+    /**
+     * 需要提供给电影打分的功能
+     *
+     * @param username
+     * @param score
+     * @param model
+     */
+    @RequestMapping(path = "/rate/{mid}", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
+    public Model rateMovies(@RequestParam("username") String username, @PathVariable("mid") int mid, @RequestParam("score") Double score, Model model) {
         return null;
     }
 

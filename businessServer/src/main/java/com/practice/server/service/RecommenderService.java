@@ -51,19 +51,21 @@ public class RecommenderService {
      * @return
      */
     public List<Recommendation> getHybridRecommendations(GetHybridRecommendationRequest request) {
-
-        // 获得实时推荐结果
-        // List<Recommendation> streamRecs = getStreamRecsMovies(new GetStreamRecsRequest(request.getUid(), request.getNum()));
-
-        // 获得 ALS 离线推荐结果
-        // List<Recommendation> userRecs = getUserCFMovies(new GetUserCFRequest(request.getUid(), request.getNum()));
-
+        // 获得电影相似矩阵的结果
+        List<Recommendation> itemCF = getItemCFMovies(new GetItemCFMovieRequest(request.getMid(), request.getNum()));
         // 获得基于内容推荐结果
-
-
+        List<Recommendation> contentBased = getContentBasedRecommendation(new GetContentBasedRecommendationRequest(request.getMid(), request.getNum()));
         // 返回结果
+        List<Recommendation> result = new ArrayList<>();
+        result.addAll(itemCF.subList(0, (int)Math.round(itemCF.size() * request.getCfShare())));
+        result.addAll(contentBased.subList(0,(int)Math.round(contentBased.size() * (1 - request.getCfShare()))));
+        return result;
+    }
 
-        return null;
+    public List<Recommendation> getItemCFMovies(GetItemCFMovieRequest request) {
+        MongoCollection<Document> itemCFCollection = getMongoDatabase().getCollection(Constant.MONGO_MOVIE_RECS_COLLECTION);
+        Document document = itemCFCollection.find(new Document("mid", request.getMid())).first();
+        return parseDocument(document, request.getNum());
     }
 
     /**

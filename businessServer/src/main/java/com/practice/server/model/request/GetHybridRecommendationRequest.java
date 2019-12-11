@@ -8,57 +8,33 @@ package com.practice.server.model.request;
  */
 public class GetHybridRecommendationRequest {
 
-    // 实时推荐结果的占比
-    private double streamShare;
+    // 离线推荐中的结果占比
+    private double cfShare;
 
-    // 基于 ALS 的离线推荐结果的占比
-    private double alsShare;
-
-    // 基于 ES 的内容结果的占比
-    private double contentShare;
-
-    private int uid;
+    private int mid;
 
     private int num;
 
-    public GetHybridRecommendationRequest(double streamShare, double alsShare, double contentShare, int uid, int num) {
-        this.streamShare = streamShare;
-        this.alsShare = alsShare;
-        this.contentShare = contentShare;
-        this.uid = uid;
+    public GetHybridRecommendationRequest(double cfShare, int mid, int num) {
+        this.cfShare = cfShare;
+        this.mid = mid;
         this.num = num;
     }
 
-    public double getStreamShare() {
-        return streamShare;
+    public double getCfShare() {
+        return cfShare;
     }
 
-    public void setStreamShare(double streamShare) {
-        this.streamShare = streamShare;
+    public void setCfShare(double cfShare) {
+        this.cfShare = cfShare;
     }
 
-    public double getAlsShare() {
-        return alsShare;
+    public int getMid() {
+        return mid;
     }
 
-    public void setAlsShare(double alsShare) {
-        this.alsShare = alsShare;
-    }
-
-    public double getContentShare() {
-        return contentShare;
-    }
-
-    public void setContentShare(double contentShare) {
-        this.contentShare = contentShare;
-    }
-
-    public int getUid() {
-        return uid;
-    }
-
-    public void setUid(int uid) {
-        this.uid = uid;
+    public void setMid(int mid) {
+        this.mid = mid;
     }
 
     public int getNum() {

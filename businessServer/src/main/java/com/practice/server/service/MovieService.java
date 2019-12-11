@@ -34,13 +34,13 @@ public class MovieService {
 
     private MongoCollection<Document> movieCollection;
 
-    private MongoCollection<Document> getMovieCollection(){
+    private MongoCollection<Document> getMovieCollection() {
         if (null == movieCollection)
             this.movieCollection = mongoClient.getDatabase(Constant.MONGO_DATABASE).getCollection(Constant.MONGO_MOVIE_COLLECTION);
         return this.movieCollection;
     }
 
-    private Movie documentToMovie(Document document){
+    private Movie documentToMovie(Document document) {
         try {
             Movie movie = objectMapper.readValue(JSON.serialize(document), Movie.class);
             Document score = mongoClient.getDatabase(Constant.MONGO_DATABASE).getCollection(Constant.MONGO_AVERAGE_MOVIES).find(Filters.eq("mid", movie.getMid())).first();
@@ -71,6 +71,18 @@ public class MovieService {
             result.add(documentToMovie(item));
         }
         return result;
+    }
+
+    /**
+     * 单部电影信息
+     *
+     * @param mid
+     */
+    public Movie findMovieInfo(int mid) {
+        Document movieDocument = getMovieCollection().find(new Document("mid", mid)).first();
+        if (null == movieDocument || movieDocument.isEmpty())
+            return null;
+        return documentToMovie(movieDocument);
     }
 
 }
