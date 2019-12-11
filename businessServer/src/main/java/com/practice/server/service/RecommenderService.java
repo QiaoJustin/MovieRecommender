@@ -1,12 +1,12 @@
 package com.practice.server.service;
 
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Sorts;
 import com.practice.server.model.recom.Recommendation;
-import com.practice.server.model.request.GetContentBasedRecommendationRequest;
-import com.practice.server.model.request.GetHybridRecommendationRequest;
-import com.practice.server.model.request.GetStreamRecsRequest;
-import com.practice.server.model.request.GetUserCFRequest;
+import com.practice.server.model.request.*;
 import com.practice.server.utils.Constant;
 import org.bson.Document;
 import org.elasticsearch.action.search.SearchResponse;
@@ -36,6 +36,14 @@ public class RecommenderService {
     @Autowired
     private TransportClient esClient;
 
+    private MongoDatabase mongoDatabase;
+
+    private MongoDatabase getMongoDatabase(){
+        if (null == mongoDatabase)
+            this.mongoDatabase = mongoClient.getDatabase(Constant.MONGO_DATABASE);
+        return this.mongoDatabase;
+    }
+
     /**
      * 获取混合推荐结果【用在当前电影的相似中】
      * @param request
@@ -64,7 +72,6 @@ public class RecommenderService {
      * @return
      */
     public List<Recommendation> getContentBasedRecommendation(GetContentBasedRecommendationRequest request) {
-
         MoreLikeThisQueryBuilder queryBuilder = QueryBuilders.moreLikeThisQuery(
                 new MoreLikeThisQueryBuilder.Item[]{
                         new MoreLikeThisQueryBuilder.Item(Constant.ES_INDEX, Constant.ES_TYPE, String.valueOf(request.getMid()))
@@ -94,7 +101,7 @@ public class RecommenderService {
      * @return
      */
     public List<Recommendation> getUserCFMovies(GetUserCFRequest request) {
-        MongoCollection<Document> userCFCollection = mongoClient.getDatabase(Constant.MONGO_DATABASE).getCollection(Constant.MONGO_USER_COLLECTION);
+        MongoCollection<Document> userCFCollection = getMongoDatabase().getCollection(Constant.MONGO_USER_COLLECTION);
         Document document = userCFCollection.find(new Document("uid", request.getUid())).first();
         return parseDocument(document, request.getSum());
     }
@@ -122,7 +129,7 @@ public class RecommenderService {
      * @param request
      */
     public List<Recommendation> getStreamRecsMovies(GetStreamRecsRequest request) {
-        MongoCollection<Document> streamRecsCollection = mongoClient.getDatabase(Constant.MONGO_DATABASE).getCollection(Constant.MONGO_STREAM_RECS_COLLECTION);
+        MongoCollection<Document> streamRecsCollection = getMongoDatabase().getCollection(Constant.MONGO_STREAM_RECS_COLLECTION);
         Document document = streamRecsCollection.find(new Document("uid", request.getUid())).first();
 
         List<Recommendation> result = new ArrayList<>();
@@ -134,6 +141,50 @@ public class RecommenderService {
             result.add(new Recommendation(Integer.parseInt(para[0]), Double.parseDouble(para[1])));
         }
         return result.subList(0, result.size() > request.getNum() ? request.getNum() : result.size());
+    }
+
+    /**
+     * 获取电影类别的 TOP 电影，用于处理冷启动问题
+     * @param request
+     */
+    public List<Recommendation> getGenresTopMovies(GetGenresTopMoviesRequest request) {
+        Document genresDocument = getMongoDatabase().getCollection(Constant.MONGO_GENRES_TOP_MOVIES).find(new Document("genres", request.getGenres())).first();
+        List<Recommendation> recommendations = new ArrayList<>();
+        if (null == genresDocument || genresDocument.isEmpty())
+            return recommendations;
+        return parseDocument(genresDocument, request.getNum());
+    }
+
+    /**
+     * 获取最热电影
+     * @param request
+     */
+    public List<Recommendation> getHotRecommendations(GetHotRecommendationRequest request){
+        FindIterable<Document> documents = getMongoDatabase()
+                .getCollection(Constant.MONGO_RATE_MORE_RECENTLY_MOVIES)
+                .find()
+                .sort(Sorts.descending("yearhmouth"));
+        List<Recommendation> recommendations = new ArrayList<>();
+        for (Document item : documents) {
+            recommendations.add(new Recommendation(item.getInteger("mid"), 0D));
+        }
+        return recommendations.subList(0, recommendations.size() > request.getSum() ? request.getSum() : recommendations.size());
+    }
+
+    /**
+     * 获取优质电影的集合
+     * @param request
+     */
+    public List<Recommendation> getRateMoreMovies(GetRateMoreMovieRequest request){
+        FindIterable<Document> documents = getMongoDatabase()
+                .getCollection(Constant.MONGO_RATE_MORE_MOVIES)
+                .find()
+                .sort(Sorts.descending("count"));
+        List<Recommendation> recommendations = new ArrayList<>();
+        for (Document item : documents) {
+            recommendations.add(new Recommendation(item.getInteger("mid"), 0D));
+        }
+        return recommendations.subList(0, recommendations.size() > request.getNum() ? request.getNum() : recommendations.size());
     }
 
 }

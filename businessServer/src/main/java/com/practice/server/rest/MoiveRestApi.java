@@ -3,7 +3,7 @@ package com.practice.server.rest;
 import com.practice.server.model.core.Movie;
 import com.practice.server.model.core.User;
 import com.practice.server.model.recom.Recommendation;
-import com.practice.server.model.request.GetStreamRecsRequest;
+import com.practice.server.model.request.*;
 import com.practice.server.service.MovieService;
 import com.practice.server.service.RecommenderService;
 import com.practice.server.service.UserService;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @Description 用于处理电影相关的功能
@@ -39,7 +40,7 @@ public class MoiveRestApi {
 
     // ************ 首页功能 ***************
 
-    /** 提供获取实时推荐信息的接口 【混合推荐】
+    /** 提供获取实时推荐信息的接口 【混合推荐】 需要考虑冷启动问题
      *  访问 url：/rest/movies/stream?username=abn&num=100
      *  返回：{success: true, movies:[]}
      * @param username
@@ -51,6 +52,10 @@ public class MoiveRestApi {
     public Model getRealRecommendations(@RequestParam("username") String username, @RequestParam("num") int num, Model model) {
         User user = userService.findUserByUsername(username);
         List<Recommendation> recommendations = recommenderService.getStreamRecsMovies(new GetStreamRecsRequest(user.getUid(), num));
+        if (recommendations.size() == 0) {
+            Random random = new Random();
+            recommendations = recommenderService.getGenresTopMovies(new GetGenresTopMoviesRequest(user.getGenres().get(random.nextInt(user.getGenres().size())), num));
+        }
         List<Integer> ids = new ArrayList<>();
         for (Recommendation recom : recommendations) {
             ids.add(recom.getMid());
@@ -68,18 +73,46 @@ public class MoiveRestApi {
      */
     @RequestMapping(path = "/offline", produces = "application/json", method = RequestMethod.GET)
     @ResponseBody
-    public Model getOfflineRecommendations(String username, Model model) {
-        return null;
+    public Model getOfflineRecommendations(@RequestParam("username")String username, @RequestParam("num") int num, Model model) {
+        User user = userService.findUserByUsername(username);
+        List<Recommendation> recommendations = recommenderService.getUserCFMovies(new GetUserCFRequest(user.getUid(), num));
+        if (recommendations.size() == 0) {
+            Random random = new Random();
+            recommendations = recommenderService.getGenresTopMovies(new GetGenresTopMoviesRequest(user.getGenres().get(random.nextInt(user.getGenres().size())), num));
+        }
+        List<Integer> ids = new ArrayList<>();
+        for (Recommendation recom : recommendations) {
+            ids.add(recom.getMid());
+        }
+        List<Movie> result = movieService.getMoviesByMids(ids);
+        model.addAttribute("success", true);
+        model.addAttribute("movies",result);
+        return model;
     }
 
-    // 提供获取热门推荐信息的接口
-    public Model getHotRecommendations(Model model) {
-        return null;
+    /**
+     * 提供获取热门推荐信息的接口
+     * @param num
+     * @param model
+     */
+    @RequestMapping(path = "/hot", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
+    public Model getHotRecommendations(@RequestParam("num") int num, Model model) {
+        model.addAttribute("success", true);
+        model.addAttribute("movies",recommenderService.getHotRecommendations(new GetHotRecommendationRequest(num)));
+        return model;
     }
 
-    // 提供获取优质电影的信息的接口
-    public Model getRateMoreRecommendations(Model model) {
-        return null;
+    /**
+     * 提供获取优质电影的信息的接口
+     * @param model
+     */
+    @RequestMapping(path = "/rate", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
+    public Model getRateMoreRecommendations(@RequestParam("num") int num, Model model) {
+        model.addAttribute("success", true);
+        model.addAttribute("movies",recommenderService.getRateMoreMovies(new GetRateMoreMovieRequest(num)));
+        return model;
     }
 
     // 获取最新电影的信息的接口

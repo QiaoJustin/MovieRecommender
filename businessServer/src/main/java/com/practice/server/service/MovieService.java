@@ -8,7 +8,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.util.JSON;
 import com.practice.server.model.core.Movie;
-import com.practice.server.model.recom.Recommendation;
 import com.practice.server.utils.Constant;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
