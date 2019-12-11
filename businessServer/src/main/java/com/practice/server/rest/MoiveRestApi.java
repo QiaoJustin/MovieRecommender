@@ -40,9 +40,11 @@ public class MoiveRestApi {
 
     // ************ 首页功能 ***************
 
-    /** 提供获取实时推荐信息的接口 【混合推荐】 需要考虑冷启动问题
-     *  访问 url：/rest/movies/stream?username=abn&num=100
-     *  返回：{success: true, movies:[]}
+    /**
+     * 提供获取实时推荐信息的接口 【混合推荐】 需要考虑冷启动问题
+     * 访问 url：/rest/movies/stream?username=abn&num=100
+     * 返回：{success: true, movies:[]}
+     *
      * @param username
      * @param num
      * @param model
@@ -62,18 +64,19 @@ public class MoiveRestApi {
         }
         List<Movie> result = movieService.getMoviesByMids(ids);
         model.addAttribute("success", true);
-        model.addAttribute("movies",result);
+        model.addAttribute("movies", result);
         return model;
     }
 
     /**
      * 提供获取离线推荐信息的接口
+     *
      * @param username
      * @param model
      */
     @RequestMapping(path = "/offline", produces = "application/json", method = RequestMethod.GET)
     @ResponseBody
-    public Model getOfflineRecommendations(@RequestParam("username")String username, @RequestParam("num") int num, Model model) {
+    public Model getOfflineRecommendations(@RequestParam("username") String username, @RequestParam("num") int num, Model model) {
         User user = userService.findUserByUsername(username);
         List<Recommendation> recommendations = recommenderService.getUserCFMovies(new GetUserCFRequest(user.getUid(), num));
         if (recommendations.size() == 0) {
@@ -86,12 +89,13 @@ public class MoiveRestApi {
         }
         List<Movie> result = movieService.getMoviesByMids(ids);
         model.addAttribute("success", true);
-        model.addAttribute("movies",result);
+        model.addAttribute("movies", result);
         return model;
     }
 
     /**
      * 提供获取热门推荐信息的接口
+     *
      * @param num
      * @param model
      */
@@ -99,39 +103,62 @@ public class MoiveRestApi {
     @ResponseBody
     public Model getHotRecommendations(@RequestParam("num") int num, Model model) {
         model.addAttribute("success", true);
-        model.addAttribute("movies",recommenderService.getHotRecommendations(new GetHotRecommendationRequest(num)));
+        model.addAttribute("movies", recommenderService.getHotRecommendations(new GetHotRecommendationRequest(num)));
         return model;
     }
 
     /**
      * 提供获取优质电影的信息的接口
+     *
      * @param model
      */
     @RequestMapping(path = "/rate", produces = "application/json", method = RequestMethod.GET)
     @ResponseBody
     public Model getRateMoreRecommendations(@RequestParam("num") int num, Model model) {
         model.addAttribute("success", true);
-        model.addAttribute("movies",recommenderService.getRateMoreMovies(new GetRateMoreMovieRequest(num)));
+        model.addAttribute("movies", recommenderService.getRateMoreMovies(new GetRateMoreMovieRequest(num)));
         return model;
     }
 
-    // 获取最新电影的信息的接口
-    public Model getNewRecommendations(Model model) {
-        return null;
+    /**
+     * 获取最新电影的信息的接口【该方法还需要进一步完善业务逻辑】
+     *
+     * @param num
+     * @param model
+     */
+    @RequestMapping(path = "/new", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
+    public Model getNewRecommendations(@RequestParam("num") int num, Model model) {
+        model.addAttribute("success", true);
+        model.addAttribute("movies", recommenderService.getNewMovies(new GetNewMovieRequest(num)));
+        return model;
     }
 
 
     // ************ 模糊检索 ***************
 
-    // 提供基于名称或者描述的模糊检索功能
-    public Model getFuzzySearchMovies(String query, Model model) {
-        return null;
+    /**
+     * 提供基于名称或者描述的模糊检索功能
+     *
+     * @param query
+     * @param model
+     */
+    @RequestMapping(path = "/fuzzy", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
+    public Model getFuzzySearchMovies(@RequestParam("query") String query, @RequestParam("num") int num, Model model) {
+        model.addAttribute("success", true);
+        model.addAttribute("movies", recommenderService.getFuzzyMovies(new GetFuzzySearchMovieRequest(query, num)));
+        return model;
     }
 
     // ************ 电影的详细页面 ***************
 
     // 获取单部电影信息
-    public Model getMovieInfo(int mid, Model model) {
+    @RequestMapping(path = "/info", produces = "application/json", method = RequestMethod.GET)
+    @ResponseBody
+    public Model getMovieInfo(@RequestParam("mid") int mid, Model model) {
+
+
         return null;
     }
 
@@ -146,7 +173,7 @@ public class MoiveRestApi {
     }
 
     // 需要能够获取电影相似的电影推荐
-    public Model getSimMoviesRecommendation(int mid, Model model){
+    public Model getSimMoviesRecommendation(int mid, Model model) {
         return null;
     }
 
@@ -165,7 +192,7 @@ public class MoiveRestApi {
     // ************ 用户空间页面 ***************
 
     // 需要提供用户的所有电影评分记录
-    public Model getUserRatings(String username, Model model){
+    public Model getUserRatings(String username, Model model) {
         return null;
     }
 

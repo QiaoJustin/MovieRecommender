@@ -11,6 +11,7 @@ import com.practice.server.utils.Constant;
 import org.bson.Document;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.index.query.FuzzyQueryBuilder;
 import org.elasticsearch.index.query.MoreLikeThisQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -187,4 +188,34 @@ public class RecommenderService {
         return recommendations.subList(0, recommendations.size() > request.getNum() ? request.getNum() : recommendations.size());
     }
 
+    /**
+     * 获取最新电影【该方法还需要进一步完善业务逻辑】
+     * @param request
+     */
+    public List<Recommendation> getNewMovies(GetNewMovieRequest request) {
+        FindIterable<Document> documents = getMongoDatabase()
+                .getCollection(Constant.MONGO_MOVIE_COLLECTION)
+                .find()
+                .sort(Sorts.descending("name"));
+        List<Recommendation> recommendations = new ArrayList<>();
+        for (Document item : documents) {
+            recommendations.add(new Recommendation(item.getInteger("mid"), 0D));
+        }
+        return recommendations.subList(0, recommendations.size() > request.getNum() ? request.getNum() : recommendations.size());
+    }
+
+    /**
+     * 模糊检索主题
+     * @param request
+     */
+    public List<Recommendation> getFuzzyMovies(GetFuzzySearchMovieRequest request){
+        FuzzyQueryBuilder queryBuilder = QueryBuilders.fuzzyQuery("name", request.getQuery());
+        SearchResponse searchResponse = esClient
+                .prepareSearch(Constant.ES_INDEX)
+                .setQuery(queryBuilder)
+                .setSize(request.getNum())
+                .execute()
+                .actionGet();
+        return parseESResponse(searchResponse);
+    }
 }
