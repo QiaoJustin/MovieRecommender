@@ -16,7 +16,7 @@
         <casbah.version>3.1.1</casbah.version>
         <redis.version>2.9.0</redis.version>
         <spark.version>2.1.1</spark.version>
-        <kafka.version>0.10.2.1</kafka.version>
+        <kafka.version>0.10.2.2</kafka.version>
     </properties>
 
     <dependencies>
